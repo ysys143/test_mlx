@@ -153,12 +153,12 @@ with open("results/concurrency_results.json") as f:
 lengths_c     = [512, 2048, 8192]
 levels        = [1, 2, 4]
 length_colors = ["#4C9BE8", "#E8864C", "#4CE89B"]
-backend_styles = {"mlx": "-", "ollama": "--"}
-backend_labels = {"mlx": "MLX server", "ollama": "Ollama"}
+backend_styles = {"mlx": "-", "ollama": "--", "llamacpp": ":"}
+backend_labels = {"mlx": "MLX server", "ollama": "Ollama", "llamacpp": "llama-server"}
 
 fig, axes = plt.subplots(1, 2, figsize=(14, 5.5))
 fig.patch.set_facecolor("#0d1117")
-fig.suptitle("Concurrency Benchmark  |  mlx_lm.server (decode-concurrency=4) vs Ollama (NUM_PARALLEL=4)",
+fig.suptitle("Concurrency Benchmark  |  MLX server vs Ollama vs llama-server  |  np=4 each",
              fontsize=12, color="#e6edf3", fontweight="bold", y=1.02)
 
 for ax, metric, ylabel, title in [
@@ -206,6 +206,7 @@ from matplotlib.lines import Line2D
 style_legend = [
     Line2D([0], [0], color="#aaa", linestyle="-",  linewidth=2, label="MLX server (solid)"),
     Line2D([0], [0], color="#aaa", linestyle="--", linewidth=2, label="Ollama (dashed)"),
+    Line2D([0], [0], color="#aaa", linestyle=":",  linewidth=2, label="llama-server (dotted)"),
 ]
 axes[0].legend(handles=style_legend + [
     Line2D([0], [0], color=c, marker="o", linewidth=2, label=f"{l} tok")
