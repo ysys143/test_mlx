@@ -110,6 +110,12 @@
       "type": "file"
     },
     {
+      "path": "plot_results.py",
+      "accessCount": 5,
+      "lastAccessed": 1774526304434,
+      "type": "file"
+    },
+    {
       "path": "backends/bench_vllm_metal.py",
       "accessCount": 3,
       "lastAccessed": 1774514972809,
@@ -122,15 +128,9 @@
       "type": "file"
     },
     {
-      "path": "plot_results.py",
-      "accessCount": 2,
-      "lastAccessed": 1774525102948,
-      "type": "file"
-    },
-    {
       "path": "figures/fig4_concurrency.png",
-      "accessCount": 2,
-      "lastAccessed": 1774525112113,
+      "accessCount": 3,
+      "lastAccessed": 1774526311935,
       "type": "file"
     },
     {
