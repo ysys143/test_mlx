@@ -4,87 +4,25 @@ Benchmarks for Qwen3.5-9B inference across MLX, llama.cpp, Ollama, and vLLM Meta
 
 ## Single-Request Throughput
 
-```
-tok/s  (higher is better)                               512-tok input, 200-tok output
-
-MLX 4-bit       ████████████████████████████████████  34.52
-llama.cpp Metal ███████████████████████████████████   33.10
-Ollama          ███████████████████████████████       29.99
-vLLM direct     ████████████████                      15.61
-vLLM HTTP       ███                                    3.24
-                0         10        20        30        35
-```
-
-```
-TTFT ms  (lower is better)
-
-Ollama          ████████████                          126 ms
-MLX 4-bit       █████████████████████████             256 ms
-vLLM direct     ████████████████████████████████████  341 ms
-llama.cpp Metal ████████████████████████████████████  344 ms
-vLLM HTTP       █████████████████████████████████████ 366 ms
-                0        100       200       300       366
-```
+![Throughput and TTFT](figures/fig1_throughput.png)
 
 ## Prefill Time (TTFT) vs Input Length
 
-```
-TTFT ms  (lower is better)
+![Prefill scaling](figures/fig2_prefill_scaling.png)
 
-            64 tok   512 tok   2048 tok   8192 tok   32768 tok
-            ------   -------   --------   --------   ---------
-MLX 4-bit     ~60      ~256      ~900      ~3500      ~18000
-llama.cpp     ~80      ~344     ~1200      ~4500      ~22000
-Ollama        ~50      ~126      ~500      ~2000      ~10000
+TTFT grows near-linearly up to 8k (GatedDeltaNet O(n) linear attention). At 32k, SDPA layers cause superlinear growth.
 
-TTFT growth is near-linear up to 8k (GatedDeltaNet O(n)).
-At 32k, SDPA layers cause superlinear growth -- TTFT roughly 5x expected.
-```
+## Decode Throughput vs Input Length
 
-```
-Decode tok/s vs input length  (higher is better)
+![Decode throughput](figures/fig3_decode_vs_length.png)
 
-            512 tok    2048 tok   8192 tok   32768 tok
-            -------    --------   --------   ---------
-MLX 4-bit    ~34         ~34        ~32        ~17      <- halved at 32k
-llama.cpp    ~33         ~33        ~31        ~16
-Ollama       ~30         ~30        ~28        ~14
-```
-
-Decode throughput is stable up to 8k, then roughly halves at 32k.
-SDPA layers require O(n) KV cache reads per decode step.
+Stable up to 8k, then roughly halved at 32k — SDPA layers require reading the full KV cache on every decode step.
 
 ## Concurrency (Ollama, OLLAMA_NUM_PARALLEL=4)
 
-```
-Aggregate tok/s vs concurrency  (ideal: linear scaling)
+![Concurrency benchmark](figures/fig4_concurrency.png)
 
- 512-tok input
- c=1  ████████████████████████  23.5   <- baseline
- c=2  █████████████████████████ 24.0   [X] no scaling (ideal: ~47)
- c=4  ██████████████████████████25.0   [X] no scaling (ideal: ~94)
-
-2048-tok input
- c=1  █████████████████████████ 21.7
- c=2  █████████████████████████ 21.3   [X] no scaling
- c=4  █████████████████████████ 21.4   [X] no scaling
-
-8192-tok input
- c=1  █████████████████████     18.1
- c=2  █████████████████████     18.2   [X] no scaling
- c=4  ████████████████████      17.2   [X] slight degradation
-```
-
-```
-TTFT grows linearly with queue depth -- proof of serial processing
-
- 512-tok c=1  ██                                1179 ms
- 512-tok c=2  █████████████                     5500 ms  (4.7x)
- 512-tok c=4  █████████████████████████████████13081 ms  (11.1x)
-```
-
-Aggregate tok/s is flat -- `NUM_PARALLEL` controls queue depth only.
-Requests are processed sequentially; TTFT scales linearly with queue depth.
+Aggregate tok/s is completely flat regardless of concurrency — `NUM_PARALLEL` controls queue depth only, not batching. TTFT scales linearly with queue depth (proof of serial GPU processing).
 
 Full report: [`results/benchmark_report.md`](results/benchmark_report.md)
 
