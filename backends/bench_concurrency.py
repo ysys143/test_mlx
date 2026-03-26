@@ -1,11 +1,17 @@
 """Concurrency throughput benchmark.
 
-Sends N simultaneous requests to server backends (Ollama, vLLM Metal)
-and measures aggregate tokens/sec at each concurrency level.
+Sends N simultaneous requests to server backends and measures aggregate
+tokens/sec at each concurrency level.
+
+Backends:
+  ollama    — Ollama HTTP API (localhost:11434)
+  mlx       — mlx_lm.server OpenAI-compat (localhost:8081)
+  llamacpp  — llama-server OpenAI-compat (localhost:8082)
+  vllm      — vLLM Metal HTTP (localhost:8765)
 
 Usage:
     uv run python backends/bench_concurrency.py
-    uv run python backends/bench_concurrency.py --backend ollama --levels 1,2,4,8
+    uv run python backends/bench_concurrency.py --backends ollama,mlx --levels 1,2,4
 """
 
 import argparse
@@ -22,13 +28,16 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from config import PROMPT, MAX_TOKENS
 
 CONCURRENCY_LEVELS = [1, 2, 4]
-INPUT_LENGTHS = [512, 2048, 8192]   # token counts for long-input tests
+INPUT_LENGTHS = [512, 2048, 8192]
 MAX_CTX = 32768
 
-# Backend endpoints
-OLLAMA_URL = "http://localhost:11434/api/generate"
-VLLM_URL = "http://localhost:8765/v1/completions"
-VLLM_MODEL = "Qwen/Qwen3.5-9B"
+OLLAMA_URL  = "http://localhost:11434/api/generate"
+MLX_URL     = "http://localhost:8081/v1/completions"
+MLX_MODEL   = "/Users/jaesolshin/Documents/GitHub/test_mlx/models/qwen3.5-9b-mlx-4bit"
+LLAMA_URL   = "http://localhost:8082/v1/completions"
+LLAMA_MODEL = "qwen3.5"   # llama-server uses filename stem
+VLLM_URL    = "http://localhost:8765/v1/completions"
+VLLM_MODEL  = "Qwen/Qwen3.5-9B"
 
 _FILLER = (
     "The theory of relativity, developed by Albert Einstein, fundamentally changed "
@@ -51,6 +60,8 @@ class RequestResult:
     error: str = ""
 
 
+# ── Ollama ────────────────────────────────────────────────────────────────────
+
 def _ollama_request(prompt: str, max_tokens: int) -> RequestResult:
     start = time.perf_counter()
     first_token_time = None
@@ -72,7 +83,6 @@ def _ollama_request(prompt: str, max_tokens: int) -> RequestResult:
             if data.get("response"):
                 token_count += 1
             if data.get("done"):
-                # Ollama reports eval_count directly
                 token_count = data.get("eval_count", token_count)
                 break
         end = time.perf_counter()
@@ -85,14 +95,17 @@ def _ollama_request(prompt: str, max_tokens: int) -> RequestResult:
                              ttft_ms=0, success=False, error=str(e))
 
 
-def _vllm_request(prompt: str, max_tokens: int) -> RequestResult:
+# ── OpenAI-compat (mlx_lm.server / llama-server / vLLM) ─────────────────────
+
+def _openai_compat_request(url: str, model: str,
+                            prompt: str, max_tokens: int) -> RequestResult:
     start = time.perf_counter()
     first_token_time = None
     token_count = 0
     try:
         with requests.post(
-            VLLM_URL,
-            json={"model": VLLM_MODEL, "prompt": prompt,
+            url,
+            json={"model": model, "prompt": prompt,
                   "max_tokens": max_tokens, "stream": True},
             stream=True, timeout=300,
         ) as resp:
@@ -104,8 +117,7 @@ def _vllm_request(prompt: str, max_tokens: int) -> RequestResult:
                     if first_token_time is None:
                         first_token_time = time.perf_counter()
                     chunk = json.loads(line[6:])
-                    text = chunk["choices"][0].get("text", "")
-                    if text:
+                    if chunk["choices"][0].get("text"):
                         token_count += 1
         end = time.perf_counter()
         ttft = (first_token_time - start) * 1000 if first_token_time else 0
@@ -117,19 +129,46 @@ def _vllm_request(prompt: str, max_tokens: int) -> RequestResult:
                              ttft_ms=0, success=False, error=str(e))
 
 
-def _check_server(url: str, is_ollama: bool = False) -> bool:
+def _mlx_request(prompt: str, max_tokens: int) -> RequestResult:
+    return _openai_compat_request(MLX_URL, MLX_MODEL, prompt, max_tokens)
+
+def _llamacpp_request(prompt: str, max_tokens: int) -> RequestResult:
+    return _openai_compat_request(LLAMA_URL, LLAMA_MODEL, prompt, max_tokens)
+
+def _vllm_request(prompt: str, max_tokens: int) -> RequestResult:
+    return _openai_compat_request(VLLM_URL, VLLM_MODEL, prompt, max_tokens)
+
+
+# ── Server health checks ──────────────────────────────────────────────────────
+
+_HEALTH = {
+    "ollama":   ("http://localhost:11434", False),
+    "mlx":      ("http://localhost:8081/health", True),
+    "llamacpp": ("http://localhost:8082/health", True),
+    "vllm":     ("http://localhost:8765/health", True),
+}
+
+_FNS = {
+    "ollama":   _ollama_request,
+    "mlx":      _mlx_request,
+    "llamacpp": _llamacpp_request,
+    "vllm":     _vllm_request,
+}
+
+
+def _check_server(backend: str) -> bool:
+    url, needs_200 = _HEALTH[backend]
     try:
-        check = "http://localhost:11434" if is_ollama else "http://localhost:8765/health"
-        requests.get(check, timeout=2)
-        return True
+        r = requests.get(url, timeout=3)
+        return r.status_code == 200 if needs_200 else True
     except Exception:
         return False
 
 
-def run_concurrency_level(backend: str, n: int, prompt: str, max_tokens: int) -> dict:
-    """Run N simultaneous requests and collect aggregate stats."""
-    fn = _ollama_request if backend == "ollama" else _vllm_request
+# ── Runner ────────────────────────────────────────────────────────────────────
 
+def run_concurrency_level(backend: str, n: int, prompt: str, max_tokens: int) -> dict:
+    fn = _FNS[backend]
     wall_start = time.perf_counter()
     results: list[RequestResult] = []
 
@@ -138,9 +177,7 @@ def run_concurrency_level(backend: str, n: int, prompt: str, max_tokens: int) ->
         for f in as_completed(futures):
             results.append(f.result())
 
-    wall_end = time.perf_counter()
-    wall_sec = wall_end - wall_start
-
+    wall_sec = time.perf_counter() - wall_start
     successful = [r for r in results if r.success]
     total_tokens = sum(r.tokens for r in successful)
     avg_latency = sum(r.latency_sec for r in successful) / len(successful) if successful else 0
@@ -159,36 +196,30 @@ def run_concurrency_level(backend: str, n: int, prompt: str, max_tokens: int) ->
     }
 
 
-def run(backend: str = "both", levels: list[int] = None,
+def run(backends: list[str] = None, levels: list[int] = None,
         input_lengths: list[int] = None, max_tokens: int = MAX_TOKENS) -> list[dict]:
+    if backends is None:
+        backends = list(_FNS.keys())
     if levels is None:
         levels = CONCURRENCY_LEVELS
     if input_lengths is None:
         input_lengths = INPUT_LENGTHS
 
-    backends = []
-    if backend in ("both", "ollama"):
-        if _check_server("", is_ollama=True):
-            backends.append("ollama")
+    active = []
+    for b in backends:
+        if _check_server(b):
+            active.append(b)
         else:
-            print("[WARN] Ollama not running — skipping", file=sys.stderr)
-    if backend in ("both", "vllm"):
-        if _check_server("http://localhost:8765/health"):
-            backends.append("vllm")
-        else:
-            print("[WARN] vLLM Metal not running — skipping", file=sys.stderr)
+            print(f"[WARN] {b} not running — skipping", file=sys.stderr)
 
     results = []
-    for b in backends:
-        fn = _ollama_request if b == "ollama" else _vllm_request
+    for b in active:
+        fn = _FNS[b]
         print(f"\n=== {b.upper()} ===", file=sys.stderr)
-
         for length in input_lengths:
             prompt = make_prompt(length)
-            # warm-up
             print(f"  [input ~{length} tok] warm-up...", file=sys.stderr)
             fn(prompt, 5)
-
             for n in levels:
                 print(f"  [input ~{length} tok] concurrency={n}...", file=sys.stderr)
                 r = run_concurrency_level(b, n, prompt, max_tokens)
@@ -223,8 +254,8 @@ def print_table(results: list[dict]) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--backend", default="both",
-                        choices=["both", "ollama", "vllm"])
+    parser.add_argument("--backends", default="ollama,mlx",
+                        help="Comma-separated: ollama,mlx,llamacpp,vllm")
     parser.add_argument("--levels", default="1,2,4",
                         help="Comma-separated concurrency levels")
     parser.add_argument("--lengths", default="512,2048,8192",
@@ -232,13 +263,13 @@ if __name__ == "__main__":
     parser.add_argument("--max-tokens", type=int, default=MAX_TOKENS)
     args = parser.parse_args()
 
+    backends = args.backends.split(",")
     levels = [int(x) for x in args.levels.split(",")]
     lengths = [int(x) for x in args.lengths.split(",")]
-    results = run(backend=args.backend, levels=levels, input_lengths=lengths,
+    results = run(backends=backends, levels=levels, input_lengths=lengths,
                   max_tokens=args.max_tokens)
 
     print_table(results)
-    # Also save JSON
     out = Path(__file__).parent.parent / "results" / "concurrency_results.json"
     with open(out, "w") as f:
         json.dump(results, f, indent=2)

@@ -145,51 +145,73 @@ plt.close()
 print("fig3 done")
 
 
-# ── Fig 4: Concurrency (aggregate tok/s + TTFT) ───────────────────────────────
+# ── Fig 4: Concurrency — MLX server vs Ollama ────────────────────────────────
 
 with open("results/concurrency_results.json") as f:
     conc_data = json.load(f)
 
-lengths_c = [512, 2048, 8192]
-levels    = [1, 2, 4]
-
-fig, axes = plt.subplots(1, 2, figsize=(13, 5))
-fig.patch.set_facecolor("#0d1117")
-fig.suptitle("Ollama Concurrency  |  OLLAMA_NUM_PARALLEL=4",
-             fontsize=13, color="#e6edf3", fontweight="bold", y=1.01)
-
+lengths_c     = [512, 2048, 8192]
+levels        = [1, 2, 4]
 length_colors = ["#4C9BE8", "#E8864C", "#4CE89B"]
+backend_styles = {"mlx": "-", "ollama": "--"}
+backend_labels = {"mlx": "MLX server", "ollama": "Ollama"}
+
+fig, axes = plt.subplots(1, 2, figsize=(14, 5.5))
+fig.patch.set_facecolor("#0d1117")
+fig.suptitle("Concurrency Benchmark  |  mlx_lm.server (decode-concurrency=4) vs Ollama (NUM_PARALLEL=4)",
+             fontsize=12, color="#e6edf3", fontweight="bold", y=1.02)
 
 for ax, metric, ylabel, title in [
     (axes[0], "aggregate_tok_per_sec", "Aggregate tok/s",
-     "Aggregate Throughput\n(ideal: scales linearly)"),
+     "Aggregate Throughput\n(MLX batches; Ollama serializes)"),
     (axes[1], "avg_ttft_ms", "Avg TTFT (ms)",
-     "Avg TTFT\n(serial: scales linearly with concurrency)"),
+     "Avg TTFT\n(lower is better)"),
 ]:
-    for color, length in zip(length_colors, lengths_c):
-        rows = sorted(
-            [r for r in conc_data if r.get("input_tokens") == length],
-            key=lambda r: r["concurrency"]
-        )
-        xs = [r["concurrency"] for r in rows]
-        ys = [r[metric] for r in rows]
-        ax.plot(xs, ys, marker="o", linewidth=2.2, markersize=8,
-                color=color, label=f"{length} tok input")
+    handles = []
+    for backend, linestyle in backend_styles.items():
+        for color, length in zip(length_colors, lengths_c):
+            rows = sorted(
+                [r for r in conc_data
+                 if r.get("input_tokens") == length and r["backend"] == backend],
+                key=lambda r: r["concurrency"]
+            )
+            if not rows:
+                continue
+            xs = [r["concurrency"] for r in rows]
+            ys = [r[metric] for r in rows]
+            line, = ax.plot(xs, ys, marker="o", linewidth=2.2, markersize=7,
+                            color=color, linestyle=linestyle,
+                            label=f"{backend_labels[backend]} {length} tok")
+            handles.append(line)
 
     if metric == "aggregate_tok_per_sec":
-        # Ideal linear scaling reference from c=1 at 512-tok
-        base = next(r["aggregate_tok_per_sec"]
-                    for r in conc_data if r.get("input_tokens") == 512 and r["concurrency"] == 1)
-        ax.plot(levels, [base * n for n in levels], linestyle=":",
-                linewidth=1.2, color="#555", label="ideal linear")
+        mlx_base = next((r["aggregate_tok_per_sec"] for r in conc_data
+                         if r.get("input_tokens") == 512 and r["concurrency"] == 1
+                         and r["backend"] == "mlx"), None)
+        if mlx_base:
+            ax.plot(levels, [mlx_base * n for n in levels], linestyle=":",
+                    linewidth=1.2, color="#555", label="ideal linear (MLX 512)")
 
     ax.set_xticks(levels)
     ax.set_xlabel("Concurrency")
     ax.set_ylabel(ylabel)
     ax.set_title(title, fontsize=11, color="#e6edf3", fontweight="bold")
-    ax.legend(facecolor="#161b22", edgecolor="#30363d", labelcolor="#c9d1d9", fontsize=9)
+    ax.legend(facecolor="#161b22", edgecolor="#30363d", labelcolor="#c9d1d9",
+              fontsize=8, ncol=2)
     ax.grid(axis="y", linestyle="--", alpha=0.4)
     ax.spines[:].set_visible(False)
+
+# Legend: solid=MLX, dashed=Ollama
+from matplotlib.lines import Line2D
+style_legend = [
+    Line2D([0], [0], color="#aaa", linestyle="-",  linewidth=2, label="MLX server (solid)"),
+    Line2D([0], [0], color="#aaa", linestyle="--", linewidth=2, label="Ollama (dashed)"),
+]
+axes[0].legend(handles=style_legend + [
+    Line2D([0], [0], color=c, marker="o", linewidth=2, label=f"{l} tok")
+    for c, l in zip(length_colors, lengths_c)
+] + ([Line2D([0], [0], color="#555", linestyle=":", linewidth=1.2, label="ideal linear")] if True else []),
+    facecolor="#161b22", edgecolor="#30363d", labelcolor="#c9d1d9", fontsize=8)
 
 plt.tight_layout()
 plt.savefig(OUT / "fig4_concurrency.png", dpi=150, bbox_inches="tight",

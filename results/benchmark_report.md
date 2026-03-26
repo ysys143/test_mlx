@@ -112,25 +112,47 @@ vLLM Metal HTTP   ||||||||||||||||||||||||||||||||||||||||  366ms
 
 ---
 
-## Concurrency Benchmark (Ollama, OLLAMA_NUM_PARALLEL=4)
+## Concurrency Benchmark (mlx_lm.server vs Ollama)
 
-Aggregate tok/s is flat regardless of concurrency level — Ollama serializes requests internally.
+mlx_lm.server (`--decode-concurrency 4`, port 8081) vs Ollama (`OLLAMA_NUM_PARALLEL=4`).
 
-| Input tok | Concurrency | Agg tok/s | Avg TTFT (ms) | Avg lat (s) |
-|----------:|:-----------:|----------:|--------------:|------------:|
-| 512       | 1           | 23.5      | 1179          | 8.52        |
-| 512       | 2           | 24.0      | 5500          | 12.67       |
-| 512       | 4           | 25.0      | 13081         | 20.00       |
-| 2048      | 1           | 21.7      | 2449          | 9.21        |
-| 2048      | 2           | 21.3      | 7218          | 14.14       |
-| 2048      | 4           | 21.4      | 16522         | 23.42       |
-| 8192      | 1           | 18.1      | 3796          | 11.03       |
-| 8192      | 2           | 18.2      | 9200          | 16.39       |
-| 8192      | 4           | 17.2      | 21263         | 29.00       |
+### Aggregate tok/s
 
-**Key finding**: `OLLAMA_NUM_PARALLEL=4` allows queueing but not true batching.
-TTFT at concurrency=4 is ~11x single-request TTFT → requests are processed sequentially.
-Aggregate tok/s never scales — GPU compute is fully serialized per request.
+| Input tok | Concurrency | MLX tok/s | Ollama tok/s |
+|----------:|:-----------:|----------:|-------------:|
+| 512       | 1           | 23.8      | 25.6         |
+| 512       | 2           | 32.6      | 25.9         |
+| 512       | 4           | 38.0      | 24.6         |
+| 2048      | 1           | 18.9      | 18.5         |
+| 2048      | 2           | 23.1      | 17.4         |
+| 2048      | 4           | 25.6      | 15.9         |
+| 8192      | 1           | 9.1       | 10.3         |
+| 8192      | 2           | 10.0      | 9.7          |
+| 8192      | 4           | 10.6      | 9.0          |
+
+### Avg TTFT (ms)
+
+| Input tok | Concurrency | MLX TTFT | Ollama TTFT |
+|----------:|:-----------:|---------:|------------:|
+| 512       | 1           | 1625     | 1080        |
+| 512       | 2           | 3322     | 4950        |
+| 512       | 4           | 6219     | 13187       |
+| 2048      | 1           | 4697     | 2881        |
+| 2048      | 2           | 9260     | 8780        |
+| 2048      | 4           | 18065    | 20834       |
+| 8192      | 1           | 16763    | 6634        |
+| 8192      | 2           | 32161    | 16981       |
+| 8192      | 4           | 62542    | 40946       |
+
+**Key findings**:
+- **mlx_lm.server achieves real decode batching**: aggregate tok/s scales with concurrency
+  at short inputs (512 tok: +60% at c=4 vs c=1). `--decode-concurrency` actually works.
+- **Ollama serializes completely**: aggregate tok/s flat or declining at all input lengths.
+  `OLLAMA_NUM_PARALLEL` controls queue depth only, not batching.
+- **Batching effect shrinks with input length**: at 8k tokens, even MLX barely scales —
+  prefill dominates and saturates the GPU, leaving no room for batched decode.
+- **TTFT trade-off**: MLX batching delays individual TTFT (each request waits for others
+  to be scheduled), but wins on aggregate throughput.
 
 ---
 
