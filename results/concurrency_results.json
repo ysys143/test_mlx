@@ -5,10 +5,11 @@
     "requests": 1,
     "successful": 1,
     "total_tokens": 200,
-    "wall_sec": 6.8,
-    "aggregate_tok_per_sec": 29.43,
-    "avg_latency_sec": 6.79,
-    "avg_ttft_ms": 269.0
+    "wall_sec": 7.64,
+    "aggregate_tok_per_sec": 26.19,
+    "avg_latency_sec": 7.64,
+    "avg_ttft_ms": 1046.7,
+    "input_tokens": 512
   },
   {
     "backend": "ollama",
@@ -16,10 +17,11 @@
     "requests": 2,
     "successful": 2,
     "total_tokens": 400,
-    "wall_sec": 13.58,
-    "aggregate_tok_per_sec": 29.46,
-    "avg_latency_sec": 10.2,
-    "avg_ttft_ms": 3631.4
+    "wall_sec": 15.21,
+    "aggregate_tok_per_sec": 26.3,
+    "avg_latency_sec": 11.47,
+    "avg_ttft_ms": 4854.4,
+    "input_tokens": 512
   },
   {
     "backend": "ollama",
@@ -27,9 +29,82 @@
     "requests": 4,
     "successful": 4,
     "total_tokens": 800,
-    "wall_sec": 27.29,
-    "aggregate_tok_per_sec": 29.32,
-    "avg_latency_sec": 17.08,
-    "avg_ttft_ms": 10450.0
+    "wall_sec": 30.51,
+    "aggregate_tok_per_sec": 26.22,
+    "avg_latency_sec": 18.98,
+    "avg_ttft_ms": 12390.6,
+    "input_tokens": 512
+  },
+  {
+    "backend": "ollama",
+    "concurrency": 1,
+    "requests": 1,
+    "successful": 1,
+    "total_tokens": 200,
+    "wall_sec": 9.52,
+    "aggregate_tok_per_sec": 21.01,
+    "avg_latency_sec": 9.52,
+    "avg_ttft_ms": 2885.7,
+    "input_tokens": 2048
+  },
+  {
+    "backend": "ollama",
+    "concurrency": 2,
+    "requests": 2,
+    "successful": 2,
+    "total_tokens": 400,
+    "wall_sec": 19.22,
+    "aggregate_tok_per_sec": 20.81,
+    "avg_latency_sec": 14.45,
+    "avg_ttft_ms": 7706.3,
+    "input_tokens": 2048
+  },
+  {
+    "backend": "ollama",
+    "concurrency": 4,
+    "requests": 4,
+    "successful": 4,
+    "total_tokens": 800,
+    "wall_sec": 37.77,
+    "aggregate_tok_per_sec": 21.18,
+    "avg_latency_sec": 23.84,
+    "avg_ttft_ms": 17039.2,
+    "input_tokens": 2048
+  },
+  {
+    "backend": "ollama",
+    "concurrency": 1,
+    "requests": 1,
+    "successful": 1,
+    "total_tokens": 200,
+    "wall_sec": 10.85,
+    "aggregate_tok_per_sec": 18.43,
+    "avg_latency_sec": 10.85,
+    "avg_ttft_ms": 3737.6,
+    "input_tokens": 8192
+  },
+  {
+    "backend": "ollama",
+    "concurrency": 2,
+    "requests": 2,
+    "successful": 2,
+    "total_tokens": 400,
+    "wall_sec": 22.82,
+    "aggregate_tok_per_sec": 17.53,
+    "avg_latency_sec": 16.94,
+    "avg_ttft_ms": 9475.3,
+    "input_tokens": 8192
+  },
+  {
+    "backend": "ollama",
+    "concurrency": 4,
+    "requests": 4,
+    "successful": 4,
+    "total_tokens": 800,
+    "wall_sec": 54.88,
+    "aggregate_tok_per_sec": 14.58,
+    "avg_latency_sec": 33.1,
+    "avg_ttft_ms": 23849.5,
+    "input_tokens": 8192
   }
 ]
