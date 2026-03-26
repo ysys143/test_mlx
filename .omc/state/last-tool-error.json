@@ -1,7 +1,7 @@
 {
   "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"uv run huggingface-cli --version 2>/dev/null; uv tool install huggingface_hub 2>/dev/null; uvx huggingface-cli --version 2>/dev/null\",\"description\":\"Try various ways to find/install huggin...",
-  "error": "Exit code 1",
-  "timestamp": "2026-03-26T08:17:42.897Z",
-  "retry_count": 2
+  "tool_input_preview": "{\"command\":\"sleep 30 && cat /tmp/direct_out.txt && ps -p 10063 -o pid,rss,pcpu 2>/dev/null\",\"timeout\":45000,\"description\":\"Check direct benchmark progress after 30s\"}",
+  "error": "Exit code 1\n\rFetching 13 files:   0%|          | 0/13 [00:00<?, ?it/s]\rFetching 13 files: 100%|██████████| 13/13 [00:00<00:00, 282517.89it/s]\n{\n  \"backend\": \"vLLM Metal (direct, HF bf16)\",\n  \"model\": \"Qwen/Qwen3.5-9B\",\n  \"tokens_per_sec\": 15.610802308834879,\n  \"ttft_ms\": 340.8617919922108,\n  \"total_tokens\": 196,\n  \"total_sec\": 12.555408499989426\n}\n  PID    RSS  %CPU",
+  "timestamp": "2026-03-26T09:32:17.953Z",
+  "retry_count": 1
 }

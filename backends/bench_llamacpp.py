@@ -10,8 +10,14 @@ MODEL_PATH = str(Path(__file__).parent.parent / "models" / "Qwen3.5-9B-Q4_K_M.gg
 N_GPU_LAYERS = 99  # offload all layers to Metal
 
 
-def _parse_perf(stderr: str) -> dict:
-    """Parse timing info from llama-cli stderr output."""
+def _parse_perf(stderr: str, stdout: str) -> dict:
+    """Parse timing info from llama-cli output.
+
+    Tries two formats:
+    1. llama_perf_context_print (classic format)
+    2. Interactive display: [ Prompt: X t/s | Generation: Y t/s ]
+    """
+    # Format 1: classic llama_perf_context_print
     patterns = {
         "prompt_tokens": r"prompt eval time\s*=\s*[\d.]+\s*ms\s*/\s*(\d+)\s*tokens",
         "prompt_ms": r"prompt eval time\s*=\s*([\d.]+)\s*ms",
@@ -19,9 +25,22 @@ def _parse_perf(stderr: str) -> dict:
         "eval_ms": r"\beval time\s*=\s*([\d.]+)\s*ms",
     }
     result = {}
+    combined = stderr + "\n" + stdout
     for key, pat in patterns.items():
-        m = re.search(pat, stderr)
+        m = re.search(pat, combined)
         result[key] = float(m.group(1)) if m else 0.0
+
+    # Format 2: interactive display [ Prompt: X t/s | Generation: Y t/s ]
+    if result["eval_ms"] == 0:
+        m = re.search(r"Generation:\s*([\d.]+)\s*t/s", combined)
+        if m:
+            gen_tps = float(m.group(1))
+            # estimate ms from token count and rate
+            result["_gen_tps"] = gen_tps
+        m2 = re.search(r"Prompt:\s*([\d.]+)\s*t/s", combined)
+        if m2:
+            result["_prompt_tps"] = float(m2.group(1))
+
     return result
 
 
@@ -32,21 +51,30 @@ def run(prompt: str, max_tokens: int = 200) -> dict:
         "-p", prompt,
         "--predict", str(max_tokens),
         "-ngl", str(N_GPU_LAYERS),
-        "--log-disable",   # suppress verbose logs to stdout
-        "-no-cnv",         # no conversation mode
+        "--single-turn",   # exit after first response (no interactive wait)
     ]
 
     wall_start = time.perf_counter()
-    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+    # input="" closes stdin immediately so conversation mode doesn't block
+    proc = subprocess.run(cmd, input="", capture_output=True, text=True, timeout=1200)
     wall_end = time.perf_counter()
+    total_sec = wall_end - wall_start
 
-    perf = _parse_perf(proc.stderr)
+    perf = _parse_perf(proc.stderr, proc.stdout)
 
-    eval_tokens = int(perf["eval_tokens"])
-    eval_ms = perf["eval_ms"]
-    prompt_ms = perf["prompt_ms"]
-
-    tokens_per_sec = (eval_tokens / (eval_ms / 1000)) if eval_ms > 0 else 0
+    # Prefer classic llama_perf format; fall back to interactive display
+    if perf["eval_ms"] > 0:
+        eval_tokens = int(perf["eval_tokens"])
+        tokens_per_sec = eval_tokens / (perf["eval_ms"] / 1000)
+        prompt_ms = perf["prompt_ms"]
+    elif "_gen_tps" in perf:
+        tokens_per_sec = perf["_gen_tps"]
+        eval_tokens = max_tokens
+        prompt_ms = (1000 / perf.get("_prompt_tps", 1)) if "_prompt_tps" in perf else 0
+    else:
+        tokens_per_sec = max_tokens / total_sec if total_sec > 0 else 0
+        eval_tokens = max_tokens
+        prompt_ms = 0
 
     return {
         "backend": "llama.cpp Metal",

@@ -8,3 +8,12 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Large model files (download via HuggingFace)
+models/
+gpt-oss-20b/
+
+# OMC / session state (ephemeral)
+.omc/state/
+.omc/sessions/
+.cwf/sessions/

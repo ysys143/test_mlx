@@ -84,6 +84,37 @@
       "keyFiles": []
     }
   },
-  "hotPaths": [],
+  "hotPaths": [
+    {
+      "path": "backends/bench_vllm_metal.py",
+      "accessCount": 3,
+      "lastAccessed": 1774514972809,
+      "type": "file"
+    },
+    {
+      "path": "backends/bench_llamacpp.py",
+      "accessCount": 3,
+      "lastAccessed": 1774515187699,
+      "type": "file"
+    },
+    {
+      "path": "results/benchmark_report.md",
+      "accessCount": 3,
+      "lastAccessed": 1774518091937,
+      "type": "file"
+    },
+    {
+      "path": "backends/bench_gptoss.py",
+      "accessCount": 1,
+      "lastAccessed": 1774515715734,
+      "type": "file"
+    },
+    {
+      "path": "backends/bench_vllm_metal_direct.py",
+      "accessCount": 1,
+      "lastAccessed": 1774517501396,
+      "type": "file"
+    }
+  ],
   "userDirectives": []
 }

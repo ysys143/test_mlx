@@ -113,6 +113,9 @@ def run(prompt: str, max_tokens: int = 200) -> list[dict]:
 
 
 if __name__ == "__main__":
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).parent.parent))
     from config import PROMPT, MAX_TOKENS
     for r in run(PROMPT, MAX_TOKENS):
         print(json.dumps(r, indent=2))

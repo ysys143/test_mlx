@@ -12,7 +12,7 @@ REPO_PATH = "/tmp/openharmony-mlx"
 if REPO_PATH not in sys.path:
     sys.path.insert(0, REPO_PATH)
 
-MODEL_DIR = str(Path(__file__).parent.parent / "gpt-oss-20b")
+MODEL_DIR = str(Path(__file__).parent.parent / "gpt-oss-20b" / "original")
 
 
 def run(prompt: str, max_tokens: int = 200) -> dict:
