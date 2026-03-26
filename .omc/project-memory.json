@@ -87,8 +87,8 @@
   "hotPaths": [
     {
       "path": "backends/bench_concurrency.py",
-      "accessCount": 8,
-      "lastAccessed": 1774523877415,
+      "accessCount": 10,
+      "lastAccessed": 1774524435883,
       "type": "file"
     },
     {
@@ -98,15 +98,15 @@
       "type": "file"
     },
     {
-      "path": "backends/bench_prefill_decode.py",
-      "accessCount": 5,
-      "lastAccessed": 1774521170459,
+      "path": "results/benchmark_report.md",
+      "accessCount": 6,
+      "lastAccessed": 1774525075582,
       "type": "file"
     },
     {
-      "path": "results/benchmark_report.md",
+      "path": "backends/bench_prefill_decode.py",
       "accessCount": 5,
-      "lastAccessed": 1774523375108,
+      "lastAccessed": 1774521170459,
       "type": "file"
     },
     {
@@ -122,6 +122,18 @@
       "type": "file"
     },
     {
+      "path": "plot_results.py",
+      "accessCount": 2,
+      "lastAccessed": 1774525102948,
+      "type": "file"
+    },
+    {
+      "path": "figures/fig4_concurrency.png",
+      "accessCount": 2,
+      "lastAccessed": 1774525112113,
+      "type": "file"
+    },
+    {
       "path": "backends/bench_gptoss.py",
       "accessCount": 1,
       "lastAccessed": 1774515715734,
@@ -131,12 +143,6 @@
       "path": "backends/bench_vllm_metal_direct.py",
       "accessCount": 1,
       "lastAccessed": 1774517501396,
-      "type": "file"
-    },
-    {
-      "path": "plot_results.py",
-      "accessCount": 1,
-      "lastAccessed": 1774523640057,
       "type": "file"
     },
     {
@@ -155,12 +161,6 @@
       "path": "figures/fig3_decode_vs_length.png",
       "accessCount": 1,
       "lastAccessed": 1774523654832,
-      "type": "file"
-    },
-    {
-      "path": "figures/fig4_concurrency.png",
-      "accessCount": 1,
-      "lastAccessed": 1774523655082,
       "type": "file"
     }
   ],
