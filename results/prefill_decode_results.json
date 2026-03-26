@@ -1,0 +1,72 @@
+[
+  {
+    "backend": "MLX 4-bit",
+    "input_tokens": 64,
+    "ttft_ms": 265.8,
+    "decode_tok_per_sec": 49.2,
+    "decode_tokens": 197
+  },
+  {
+    "backend": "Ollama",
+    "input_tokens": 64,
+    "ttft_ms": 741.5,
+    "decode_tok_per_sec": 26.94,
+    "decode_tokens": 200
+  },
+  {
+    "backend": "MLX 4-bit",
+    "input_tokens": 512,
+    "ttft_ms": 903.4,
+    "decode_tok_per_sec": 50.15,
+    "decode_tokens": 197
+  },
+  {
+    "backend": "Ollama",
+    "input_tokens": 512,
+    "ttft_ms": 1559.4,
+    "decode_tok_per_sec": 26.42,
+    "decode_tokens": 200
+  },
+  {
+    "backend": "MLX 4-bit",
+    "input_tokens": 2048,
+    "ttft_ms": 3138.7,
+    "decode_tok_per_sec": 49.78,
+    "decode_tokens": 196
+  },
+  {
+    "backend": "Ollama",
+    "input_tokens": 2048,
+    "ttft_ms": 4028.6,
+    "decode_tok_per_sec": 27.17,
+    "decode_tokens": 200
+  },
+  {
+    "backend": "MLX 4-bit",
+    "input_tokens": 8192,
+    "ttft_ms": 12324.6,
+    "decode_tok_per_sec": 49.06,
+    "decode_tokens": 196
+  },
+  {
+    "backend": "Ollama",
+    "input_tokens": 8192,
+    "ttft_ms": 14537.7,
+    "decode_tok_per_sec": 27.77,
+    "decode_tokens": 200
+  },
+  {
+    "backend": "MLX 4-bit",
+    "input_tokens": 32768,
+    "ttft_ms": 71200.1,
+    "decode_tok_per_sec": 24.62,
+    "decode_tokens": 197
+  },
+  {
+    "backend": "Ollama",
+    "input_tokens": 32768,
+    "ttft_ms": 120936.0,
+    "decode_tok_per_sec": 14.08,
+    "decode_tokens": 200
+  }
+]

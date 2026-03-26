@@ -86,6 +86,12 @@
   },
   "hotPaths": [
     {
+      "path": "backends/bench_prefill_decode.py",
+      "accessCount": 5,
+      "lastAccessed": 1774521170459,
+      "type": "file"
+    },
+    {
       "path": "backends/bench_vllm_metal.py",
       "accessCount": 3,
       "lastAccessed": 1774514972809,
