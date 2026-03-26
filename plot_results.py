@@ -145,74 +145,60 @@ plt.close()
 print("fig3 done")
 
 
-# ── Fig 4: Concurrency — MLX server vs Ollama ────────────────────────────────
+# ── Fig 4: Concurrency — one subplot per input length ─────────────────────────
 
 with open("results/concurrency_results.json") as f:
     conc_data = json.load(f)
 
-lengths_c     = [512, 2048, 8192]
-levels        = [1, 2, 4]
-length_colors = ["#4C9BE8", "#E8864C", "#4CE89B"]
-backend_styles = {"mlx": "-", "ollama": "--", "llamacpp": ":"}
-backend_labels = {"mlx": "MLX server", "ollama": "Ollama", "llamacpp": "llama-server"}
+lengths_c = [512, 2048, 8192]
+levels    = [1, 2, 4]
 
-fig, axes = plt.subplots(1, 2, figsize=(14, 5.5))
+BACKEND_COLOR = {"mlx": "#4C9BE8", "ollama": "#4CE89B", "llamacpp": "#E8864C"}
+BACKEND_LABEL = {"mlx": "MLX server", "ollama": "Ollama", "llamacpp": "llama-server"}
+
+fig, axes = plt.subplots(1, 3, figsize=(14, 5), sharey=False)
 fig.patch.set_facecolor("#0d1117")
-fig.suptitle("Concurrency Benchmark  |  MLX server vs Ollama vs llama-server  |  np=4 each",
-             fontsize=12, color="#e6edf3", fontweight="bold", y=1.02)
+fig.suptitle(
+    "Aggregate Throughput vs Concurrency  |  MLX server / Ollama / llama-server  (np=4 each)",
+    fontsize=12, color="#e6edf3", fontweight="bold", y=1.02,
+)
 
-for ax, metric, ylabel, title in [
-    (axes[0], "aggregate_tok_per_sec", "Aggregate tok/s",
-     "Aggregate Throughput\n(MLX batches; Ollama serializes)"),
-    (axes[1], "avg_ttft_ms", "Avg TTFT (ms)",
-     "Avg TTFT\n(lower is better)"),
-]:
-    handles = []
-    for backend, linestyle in backend_styles.items():
-        for color, length in zip(length_colors, lengths_c):
-            rows = sorted(
-                [r for r in conc_data
-                 if r.get("input_tokens") == length and r["backend"] == backend],
-                key=lambda r: r["concurrency"]
-            )
-            if not rows:
-                continue
-            xs = [r["concurrency"] for r in rows]
-            ys = [r[metric] for r in rows]
-            line, = ax.plot(xs, ys, marker="o", linewidth=2.2, markersize=7,
-                            color=color, linestyle=linestyle,
-                            label=f"{backend_labels[backend]} {length} tok")
-            handles.append(line)
+for ax, length in zip(axes, lengths_c):
+    for backend in ("mlx", "ollama", "llamacpp"):
+        rows = sorted(
+            [r for r in conc_data
+             if r.get("input_tokens") == length and r["backend"] == backend],
+            key=lambda r: r["concurrency"],
+        )
+        if not rows:
+            continue
+        xs = [r["concurrency"] for r in rows]
+        ys = [r["aggregate_tok_per_sec"] for r in rows]
+        ax.plot(xs, ys, marker="o", linewidth=2.5, markersize=8,
+                color=BACKEND_COLOR[backend], label=BACKEND_LABEL[backend])
+        ax.annotate(f"{ys[-1]:.0f}",
+                    xy=(xs[-1], ys[-1]),
+                    xytext=(5, 0), textcoords="offset points",
+                    va="center", fontsize=9, color=BACKEND_COLOR[backend])
 
-    if metric == "aggregate_tok_per_sec":
-        mlx_base = next((r["aggregate_tok_per_sec"] for r in conc_data
-                         if r.get("input_tokens") == 512 and r["concurrency"] == 1
-                         and r["backend"] == "mlx"), None)
-        if mlx_base:
-            ax.plot(levels, [mlx_base * n for n in levels], linestyle=":",
-                    linewidth=1.2, color="#555", label="ideal linear (MLX 512)")
+    mlx_base = next((r["aggregate_tok_per_sec"] for r in conc_data
+                     if r.get("input_tokens") == length and r["concurrency"] == 1
+                     and r["backend"] == "mlx"), None)
+    if mlx_base:
+        ax.plot(levels, [mlx_base * n for n in levels],
+                linestyle=":", linewidth=1.2, color="#444", label="ideal linear")
 
+    ax.set_title(f"Input ~{length} tokens", fontsize=11,
+                 color="#e6edf3", fontweight="bold")
     ax.set_xticks(levels)
     ax.set_xlabel("Concurrency")
-    ax.set_ylabel(ylabel)
-    ax.set_title(title, fontsize=11, color="#e6edf3", fontweight="bold")
-    ax.legend(facecolor="#161b22", edgecolor="#30363d", labelcolor="#c9d1d9",
-              fontsize=8, ncol=2)
-    ax.grid(axis="y", linestyle="--", alpha=0.4)
+    if ax is axes[0]:
+        ax.set_ylabel("Aggregate tok/s")
+    ax.legend(facecolor="#161b22", edgecolor="#30363d",
+              labelcolor="#c9d1d9", fontsize=9)
+    ax.grid(axis="y", linestyle="--", alpha=0.35)
     ax.spines[:].set_visible(False)
-
-# Legend: solid=MLX, dashed=Ollama
-from matplotlib.lines import Line2D
-style_legend = [
-    Line2D([0], [0], color="#aaa", linestyle="-",  linewidth=2, label="MLX server (solid)"),
-    Line2D([0], [0], color="#aaa", linestyle="--", linewidth=2, label="Ollama (dashed)"),
-    Line2D([0], [0], color="#aaa", linestyle=":",  linewidth=2, label="llama-server (dotted)"),
-]
-axes[0].legend(handles=style_legend + [
-    Line2D([0], [0], color=c, marker="o", linewidth=2, label=f"{l} tok")
-    for c, l in zip(length_colors, lengths_c)
-] + ([Line2D([0], [0], color="#555", linestyle=":", linewidth=1.2, label="ideal linear")] if True else []),
-    facecolor="#161b22", edgecolor="#30363d", labelcolor="#c9d1d9", fontsize=8)
+    ax.set_xlim(0.7, 4.6)
 
 plt.tight_layout()
 plt.savefig(OUT / "fig4_concurrency.png", dpi=150, bbox_inches="tight",
