@@ -1,0 +1,35 @@
+[
+  {
+    "backend": "ollama",
+    "concurrency": 1,
+    "requests": 1,
+    "successful": 1,
+    "total_tokens": 200,
+    "wall_sec": 6.8,
+    "aggregate_tok_per_sec": 29.43,
+    "avg_latency_sec": 6.79,
+    "avg_ttft_ms": 269.0
+  },
+  {
+    "backend": "ollama",
+    "concurrency": 2,
+    "requests": 2,
+    "successful": 2,
+    "total_tokens": 400,
+    "wall_sec": 13.58,
+    "aggregate_tok_per_sec": 29.46,
+    "avg_latency_sec": 10.2,
+    "avg_ttft_ms": 3631.4
+  },
+  {
+    "backend": "ollama",
+    "concurrency": 4,
+    "requests": 4,
+    "successful": 4,
+    "total_tokens": 800,
+    "wall_sec": 27.29,
+    "aggregate_tok_per_sec": 29.32,
+    "avg_latency_sec": 17.08,
+    "avg_ttft_ms": 10450.0
+  }
+]
