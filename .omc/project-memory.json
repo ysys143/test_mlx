@@ -1,0 +1,89 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1774513654907,
+  "projectRoot": "/Users/jaesolshin/Documents/GitHub/test_mlx",
+  "techStack": {
+    "languages": [
+      {
+        "name": "Python",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "pyproject.toml"
+        ]
+      }
+    ],
+    "frameworks": [],
+    "packageManager": null,
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": "pytest",
+    "lintCommand": "ruff check",
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "__pycache__": {
+      "path": "__pycache__",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1774513654726,
+      "keyFiles": [
+        "config.cpython-312.pyc"
+      ]
+    },
+    "backends": {
+      "path": "backends",
+      "purpose": null,
+      "fileCount": 6,
+      "lastAccessed": 1774513654727,
+      "keyFiles": [
+        "__init__.py",
+        "bench_gptoss.py",
+        "bench_llamacpp.py",
+        "bench_mlx.py",
+        "bench_ollama.py"
+      ]
+    },
+    "gpt-oss-20b": {
+      "path": "gpt-oss-20b",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1774513654728,
+      "keyFiles": []
+    },
+    "models": {
+      "path": "models",
+      "purpose": "Data models",
+      "fileCount": 1,
+      "lastAccessed": 1774513654728,
+      "keyFiles": [
+        "Qwen3.5-9B-Q4_K_M.gguf"
+      ]
+    },
+    "results": {
+      "path": "results",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1774513654729,
+      "keyFiles": []
+    }
+  },
+  "hotPaths": [],
+  "userDirectives": []
+}
