@@ -35,7 +35,7 @@ OLLAMA_URL  = "http://localhost:11434/api/generate"
 MLX_URL     = "http://localhost:8081/v1/completions"
 MLX_MODEL   = "/Users/jaesolshin/Documents/GitHub/test_mlx/models/qwen3.5-9b-mlx-4bit"
 LLAMA_URL   = "http://localhost:8082/v1/completions"
-LLAMA_MODEL = "qwen3.5"   # llama-server uses filename stem
+LLAMA_MODEL = "Qwen3.5-9B-Q4_K_M.gguf"
 VLLM_URL    = "http://localhost:8765/v1/completions"
 VLLM_MODEL  = "Qwen/Qwen3.5-9B"
 
