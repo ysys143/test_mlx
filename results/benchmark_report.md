@@ -112,6 +112,28 @@ vLLM Metal HTTP   ||||||||||||||||||||||||||||||||||||||||  366ms
 
 ---
 
+## Concurrency Benchmark (Ollama, OLLAMA_NUM_PARALLEL=4)
+
+Aggregate tok/s is flat regardless of concurrency level — Ollama serializes requests internally.
+
+| Input tok | Concurrency | Agg tok/s | Avg TTFT (ms) | Avg lat (s) |
+|----------:|:-----------:|----------:|--------------:|------------:|
+| 512       | 1           | 23.5      | 1179          | 8.52        |
+| 512       | 2           | 24.0      | 5500          | 12.67       |
+| 512       | 4           | 25.0      | 13081         | 20.00       |
+| 2048      | 1           | 21.7      | 2449          | 9.21        |
+| 2048      | 2           | 21.3      | 7218          | 14.14       |
+| 2048      | 4           | 21.4      | 16522         | 23.42       |
+| 8192      | 1           | 18.1      | 3796          | 11.03       |
+| 8192      | 2           | 18.2      | 9200          | 16.39       |
+| 8192      | 4           | 17.2      | 21263         | 29.00       |
+
+**Key finding**: `OLLAMA_NUM_PARALLEL=4` allows queueing but not true batching.
+TTFT at concurrency=4 is ~11x single-request TTFT → requests are processed sequentially.
+Aggregate tok/s never scales — GPU compute is fully serialized per request.
+
+---
+
 ## Conclusions
 
 1. **MLX and llama.cpp Metal are neck-and-neck** (~34 vs ~33 tok/s).
@@ -125,6 +147,11 @@ vLLM Metal HTTP   ||||||||||||||||||||||||||||||||||||||||  366ms
 4. **vLLM Metal paged attention** does not support Qwen3.5's GatedDeltaNet.
 
 5. **openharmony-mlx GPT-OSS** blocked by weight format incompatibility.
+
+6. **Ollama does not batch requests** even with `OLLAMA_NUM_PARALLEL=4`. Aggregate
+   throughput is flat across concurrency levels. Each request occupies the full GPU
+   sequentially. Likely cause: Qwen3.5's GatedDeltaNet recurrent state is not
+   batch-parallelizable in llama.cpp's current implementation.
 
 ---
 
