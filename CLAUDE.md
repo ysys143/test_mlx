@@ -8,7 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 uv sync                              # Install all dependencies (Python 3.12)
 
 # Run benchmarks
-uv run python benchmark.py           # All backends (MLX, Ollama, llama.cpp, vLLM)
+uv run python benchmark.py           # All backends (MLX, Ollama, Ollama MLX, llama.cpp, vLLM)
+uv run python benchmark.py --backends ollama ollama_mlx mlx  # Side-by-side Ollama comparison
 uv run python backends/bench_mlx.py  # Single backend
 uv run python backends/bench_prefill_decode.py --backends mlx,ollama,llamacpp
 uv run python backends/bench_concurrency.py --backend ollama --levels 1,2,4
@@ -36,7 +37,9 @@ pytest                               # Tests
 
 **Backend connectivity modes:**
 - MLX: direct library via `mlx_lm.load()` + `stream_generate()`
-- Ollama / llama-server / mlx_lm.server: HTTP JSON (localhost ports)
+- Ollama (llama.cpp): HTTP JSON, Q4_K_M GGUF, Ollama ≤ 0.18
+- Ollama (MLX): HTTP JSON, Q4_K_M GGUF via MLX engine, Ollama ≥ 0.19 on Apple Silicon — requires `ollama pull qwen3.5:9b` after upgrading; same wire protocol as llama.cpp variant, ~2.4x slower than native mlx_lm on M3 Max (NVFP4 speedup only applies to M5 chips)
+- llama-server / mlx_lm.server: HTTP JSON (localhost ports)
 - vLLM: both direct `vllm.LLM()` and OpenAI-compat HTTP API
 
 **Model assets** live in `models/` (not committed):
