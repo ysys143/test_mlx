@@ -127,6 +127,12 @@
       "type": "file"
     },
     {
+      "path": "CLAUDE.md",
+      "accessCount": 6,
+      "lastAccessed": 1775109806395,
+      "type": "file"
+    },
+    {
       "path": "backends/bench_prefill_decode.py",
       "accessCount": 5,
       "lastAccessed": 1774521170459,
@@ -142,12 +148,6 @@
       "path": "benchmark.py",
       "accessCount": 4,
       "lastAccessed": 1775107685400,
-      "type": "file"
-    },
-    {
-      "path": "CLAUDE.md",
-      "accessCount": 4,
-      "lastAccessed": 1775109621491,
       "type": "file"
     },
     {
