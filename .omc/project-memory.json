@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1774513654907,
+  "lastScanned": 1775107482261,
   "projectRoot": "/Users/jaesolshin/Documents/GitHub/test_mlx",
   "techStack": {
     "languages": [
@@ -42,7 +42,7 @@
       "path": "__pycache__",
       "purpose": null,
       "fileCount": 1,
-      "lastAccessed": 1774513654726,
+      "lastAccessed": 1775107482207,
       "keyFiles": [
         "config.cpython-312.pyc"
       ]
@@ -50,28 +50,40 @@
     "backends": {
       "path": "backends",
       "purpose": null,
-      "fileCount": 6,
-      "lastAccessed": 1774513654727,
+      "fileCount": 9,
+      "lastAccessed": 1775107482207,
       "keyFiles": [
         "__init__.py",
+        "bench_concurrency.py",
         "bench_gptoss.py",
         "bench_llamacpp.py",
-        "bench_mlx.py",
-        "bench_ollama.py"
+        "bench_mlx.py"
+      ]
+    },
+    "figures": {
+      "path": "figures",
+      "purpose": null,
+      "fileCount": 4,
+      "lastAccessed": 1775107482207,
+      "keyFiles": [
+        "fig1_throughput.png",
+        "fig2_prefill_scaling.png",
+        "fig3_decode_vs_length.png",
+        "fig4_concurrency.png"
       ]
     },
     "gpt-oss-20b": {
       "path": "gpt-oss-20b",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1774513654728,
+      "lastAccessed": 1775107482208,
       "keyFiles": []
     },
     "models": {
       "path": "models",
       "purpose": "Data models",
       "fileCount": 1,
-      "lastAccessed": 1774513654728,
+      "lastAccessed": 1775107482208,
       "keyFiles": [
         "Qwen3.5-9B-Q4_K_M.gguf"
       ]
@@ -79,9 +91,14 @@
     "results": {
       "path": "results",
       "purpose": null,
-      "fileCount": 1,
-      "lastAccessed": 1774513654729,
-      "keyFiles": []
+      "fileCount": 5,
+      "lastAccessed": 1775107482209,
+      "keyFiles": [
+        "benchmark_report.md",
+        "benchmark_report_ko.md",
+        "concurrency_results.json",
+        "prefill_decode_results.json"
+      ]
     }
   },
   "hotPaths": [
@@ -167,6 +184,12 @@
       "path": "results/benchmark_report_ko.md",
       "accessCount": 1,
       "lastAccessed": 1774527129633,
+      "type": "file"
+    },
+    {
+      "path": "CLAUDE.md",
+      "accessCount": 1,
+      "lastAccessed": 1775107582309,
       "type": "file"
     }
   ],
