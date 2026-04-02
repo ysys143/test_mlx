@@ -20,7 +20,7 @@ from config import PROMPT, MAX_TOKENS, RUNS
 RESULTS_DIR = Path(__file__).parent / "results"
 RESULTS_DIR.mkdir(exist_ok=True)
 
-ALL_BACKENDS = ["mlx", "ollama", "llamacpp", "vllm", "gptoss"]
+ALL_BACKENDS = ["mlx", "ollama", "ollama_mlx", "llamacpp", "vllm", "gptoss"]
 
 
 def _run_backend(name: str) -> list[dict]:
@@ -31,6 +31,9 @@ def _run_backend(name: str) -> list[dict]:
             return [run(PROMPT, MAX_TOKENS) for _ in range(RUNS)]
         elif name == "ollama":
             from backends.bench_ollama import run
+            return [run(PROMPT, MAX_TOKENS) for _ in range(RUNS)]
+        elif name == "ollama_mlx":
+            from backends.bench_ollama_mlx import run
             return [run(PROMPT, MAX_TOKENS) for _ in range(RUNS)]
         elif name == "llamacpp":
             from backends.bench_llamacpp import run
@@ -129,6 +132,7 @@ def main():
 - vLLM Metal (MLX path): MLX-managed KV cache, no paged attention
 - vLLM Metal (Paged): VLLM_METAL_USE_PAGED_ATTENTION=1 (experimental)
 - Ollama: llama.cpp-based server with HTTP overhead
+- Ollama (MLX): Ollama >= 0.19, MLX engine on Apple Silicon (NVFP4), same HTTP API
 - llama.cpp Metal: direct Metal GPU, Q4_K_M GGUF, ngl=99
 - GPT-OSS-20B: MoE model (~3.6B active params/token), openharmony-mlx
 """
