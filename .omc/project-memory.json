@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1775107482261,
+  "lastScanned": 1776833641878,
   "projectRoot": "/Users/jaesolshin/Documents/GitHub/test_mlx",
   "techStack": {
     "languages": [
@@ -42,7 +42,7 @@
       "path": "__pycache__",
       "purpose": null,
       "fileCount": 1,
-      "lastAccessed": 1775107482207,
+      "lastAccessed": 1776833641858,
       "keyFiles": [
         "config.cpython-312.pyc"
       ]
@@ -50,8 +50,8 @@
     "backends": {
       "path": "backends",
       "purpose": null,
-      "fileCount": 9,
-      "lastAccessed": 1775107482207,
+      "fileCount": 10,
+      "lastAccessed": 1776833641861,
       "keyFiles": [
         "__init__.py",
         "bench_concurrency.py",
@@ -64,7 +64,7 @@
       "path": "figures",
       "purpose": null,
       "fileCount": 4,
-      "lastAccessed": 1775107482207,
+      "lastAccessed": 1776833641863,
       "keyFiles": [
         "fig1_throughput.png",
         "fig2_prefill_scaling.png",
@@ -76,14 +76,14 @@
       "path": "gpt-oss-20b",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1775107482208,
+      "lastAccessed": 1776833641864,
       "keyFiles": []
     },
     "models": {
       "path": "models",
       "purpose": "Data models",
       "fileCount": 1,
-      "lastAccessed": 1775107482208,
+      "lastAccessed": 1776833641866,
       "keyFiles": [
         "Qwen3.5-9B-Q4_K_M.gguf"
       ]
@@ -92,7 +92,7 @@
       "path": "results",
       "purpose": null,
       "fileCount": 5,
-      "lastAccessed": 1775107482209,
+      "lastAccessed": 1776833641867,
       "keyFiles": [
         "benchmark_report.md",
         "benchmark_report_ko.md",
@@ -104,8 +104,26 @@
   "hotPaths": [
     {
       "path": "backends/bench_concurrency.py",
-      "accessCount": 11,
-      "lastAccessed": 1774525571634,
+      "accessCount": 14,
+      "lastAccessed": 1776834194884,
+      "type": "file"
+    },
+    {
+      "path": "benchmark.py",
+      "accessCount": 9,
+      "lastAccessed": 1776834137043,
+      "type": "file"
+    },
+    {
+      "path": "plot_results.py",
+      "accessCount": 8,
+      "lastAccessed": 1776833815362,
+      "type": "file"
+    },
+    {
+      "path": "backends/bench_prefill_decode.py",
+      "accessCount": 8,
+      "lastAccessed": 1776834166998,
       "type": "file"
     },
     {
@@ -115,15 +133,9 @@
       "type": "file"
     },
     {
-      "path": "plot_results.py",
-      "accessCount": 7,
-      "lastAccessed": 1774527217259,
-      "type": "file"
-    },
-    {
       "path": "README.md",
-      "accessCount": 6,
-      "lastAccessed": 1774523683768,
+      "accessCount": 7,
+      "lastAccessed": 1776833814820,
       "type": "file"
     },
     {
@@ -133,33 +145,33 @@
       "type": "file"
     },
     {
-      "path": "backends/bench_prefill_decode.py",
-      "accessCount": 5,
-      "lastAccessed": 1774521170459,
-      "type": "file"
-    },
-    {
       "path": "figures/fig4_concurrency.png",
       "accessCount": 4,
       "lastAccessed": 1774527226397,
       "type": "file"
     },
     {
-      "path": "benchmark.py",
-      "accessCount": 4,
-      "lastAccessed": 1775107685400,
-      "type": "file"
-    },
-    {
       "path": "backends/bench_vllm_metal.py",
-      "accessCount": 3,
-      "lastAccessed": 1774514972809,
+      "accessCount": 4,
+      "lastAccessed": 1776833810523,
       "type": "file"
     },
     {
       "path": "backends/bench_llamacpp.py",
       "accessCount": 3,
       "lastAccessed": 1774515187699,
+      "type": "file"
+    },
+    {
+      "path": "backends/bench_ollama.py",
+      "accessCount": 2,
+      "lastAccessed": 1776833811178,
+      "type": "file"
+    },
+    {
+      "path": "backends/bench_omlx.py",
+      "accessCount": 2,
+      "lastAccessed": 1776834116039,
       "type": "file"
     },
     {
@@ -196,12 +208,6 @@
       "path": "results/benchmark_report_ko.md",
       "accessCount": 1,
       "lastAccessed": 1774527129633,
-      "type": "file"
-    },
-    {
-      "path": "backends/bench_ollama.py",
-      "accessCount": 1,
-      "lastAccessed": 1775107599370,
       "type": "file"
     },
     {

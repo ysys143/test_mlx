@@ -38,6 +38,8 @@ LLAMA_URL   = "http://localhost:8082/v1/completions"
 LLAMA_MODEL = "Qwen3.5-9B-Q4_K_M.gguf"
 VLLM_URL    = "http://localhost:8765/v1/completions"
 VLLM_MODEL  = "Qwen/Qwen3.5-9B"
+OMLX_MODELS_URL = "http://localhost:8000/v1/models"
+OMLX_CHAT_URL   = "http://localhost:8000/v1/chat/completions"
 
 _FILLER = (
     "The theory of relativity, developed by Albert Einstein, fundamentally changed "
@@ -139,6 +141,52 @@ def _vllm_request(prompt: str, max_tokens: int) -> RequestResult:
     return _openai_compat_request(VLLM_URL, VLLM_MODEL, prompt, max_tokens)
 
 
+# ── omlx (chat completions, SSE) ──────────────────────────────────────────────
+
+_omlx_model: str | None = None
+
+
+def _omlx_request(prompt: str, max_tokens: int) -> RequestResult:
+    global _omlx_model
+    if _omlx_model is None:
+        resp = requests.get(OMLX_MODELS_URL, timeout=10)
+        resp.raise_for_status()
+        model = resp.json()["data"][0]["id"]
+        _omlx_model = model
+    else:
+        model = _omlx_model
+
+    start = time.perf_counter()
+    first_token_time = None
+    token_count = 0
+    try:
+        with requests.post(
+            OMLX_CHAT_URL,
+            json={"model": model,
+                  "messages": [{"role": "user", "content": prompt}],
+                  "max_tokens": max_tokens, "stream": True},
+            stream=True, timeout=300,
+        ) as resp:
+            resp.raise_for_status()
+            for line in resp.iter_lines():
+                if not line or line == b"data: [DONE]":
+                    continue
+                if line.startswith(b"data: "):
+                    if first_token_time is None:
+                        first_token_time = time.perf_counter()
+                    chunk = json.loads(line[6:])
+                    if chunk["choices"][0]["delta"].get("content"):
+                        token_count += 1
+        end = time.perf_counter()
+        ttft = (first_token_time - start) * 1000 if first_token_time else 0
+        return RequestResult(tokens=token_count, latency_sec=end - start,
+                             ttft_ms=ttft, success=True)
+    except Exception as e:
+        end = time.perf_counter()
+        return RequestResult(tokens=0, latency_sec=end - start,
+                             ttft_ms=0, success=False, error=str(e))
+
+
 # ── Server health checks ──────────────────────────────────────────────────────
 
 _HEALTH = {
@@ -146,6 +194,7 @@ _HEALTH = {
     "mlx":      ("http://localhost:8081/health", True),
     "llamacpp": ("http://localhost:8082/health", True),
     "vllm":     ("http://localhost:8765/health", True),
+    "omlx":     ("http://localhost:8000/v1/models", True),
 }
 
 _FNS = {
@@ -153,6 +202,7 @@ _FNS = {
     "mlx":      _mlx_request,
     "llamacpp": _llamacpp_request,
     "vllm":     _vllm_request,
+    "omlx":     _omlx_request,
 }
 
 

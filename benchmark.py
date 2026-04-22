@@ -9,7 +9,6 @@ Results saved to results/benchmark_<timestamp>.json and results/benchmark_report
 import argparse
 import json
 import sys
-import time
 from datetime import datetime
 from pathlib import Path
 from statistics import mean, stdev
@@ -20,7 +19,7 @@ from config import PROMPT, MAX_TOKENS, RUNS
 RESULTS_DIR = Path(__file__).parent / "results"
 RESULTS_DIR.mkdir(exist_ok=True)
 
-ALL_BACKENDS = ["mlx", "ollama", "ollama_mlx", "llamacpp", "vllm", "gptoss"]
+ALL_BACKENDS = ["mlx", "ollama", "ollama_mlx", "llamacpp", "vllm", "gptoss", "omlx"]
 
 
 def _run_backend(name: str) -> list[dict]:
@@ -45,6 +44,10 @@ def _run_backend(name: str) -> list[dict]:
         elif name == "gptoss":
             from backends.bench_gptoss import run
             return [run(PROMPT, MAX_TOKENS) for _ in range(RUNS)]
+        elif name == "omlx":
+            from backends.bench_omlx import run
+            return [run(PROMPT, MAX_TOKENS) for _ in range(RUNS)]
+        return []
     except Exception as e:
         print(f"  [ERROR] {name}: {e}")
         return []
@@ -135,6 +138,7 @@ def main():
 - Ollama (MLX): Ollama >= 0.19, MLX engine on Apple Silicon (NVFP4), same HTTP API
 - llama.cpp Metal: direct Metal GPU, Q4_K_M GGUF, ngl=99
 - GPT-OSS-20B: MoE model (~3.6B active params/token), openharmony-mlx
+- omlx: OpenAI-compat HTTP (localhost:8000), continuous batching + SSD KV cache, Apple Silicon
 """
     with open(report_path, "w") as f:
         f.write(report)

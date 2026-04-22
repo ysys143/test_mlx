@@ -30,6 +30,8 @@ MAX_CTX = 32768  # must match across all backends
 OLLAMA_URL = "http://localhost:11434/api/generate"
 VLLM_URL = "http://localhost:8765/v1/completions"
 VLLM_MODEL = "Qwen/Qwen3.5-9B"
+OMLX_MODELS_URL = "http://localhost:8000/v1/models"
+OMLX_CHAT_URL = "http://localhost:8000/v1/chat/completions"
 
 # Base text repeated to fill token budget (~1 token per 4 chars for English)
 _FILLER = (
@@ -184,6 +186,55 @@ def _bench_vllm(prompt: str, decode_tokens: int) -> dict:
     }
 
 
+# ── omlx ──────────────────────────────────────────────────────────────────────
+
+_omlx_model: str | None = None
+
+
+def _bench_omlx(prompt: str, decode_tokens: int) -> dict:
+    global _omlx_model
+    if _omlx_model is None:
+        resp = requests.get(OMLX_MODELS_URL, timeout=10)
+        resp.raise_for_status()
+        model = resp.json()["data"][0]["id"]
+        _omlx_model = model
+    else:
+        model = _omlx_model
+
+    messages = [{"role": "user", "content": prompt}]
+    first_token_time = None
+    token_count = 0
+    start = time.perf_counter()
+
+    with requests.post(
+        OMLX_CHAT_URL,
+        json={"model": model, "messages": messages,
+              "max_tokens": decode_tokens, "stream": True},
+        stream=True, timeout=600,
+    ) as resp:
+        resp.raise_for_status()
+        for line in resp.iter_lines():
+            if not line or line == b"data: [DONE]":
+                continue
+            if line.startswith(b"data: "):
+                if first_token_time is None:
+                    first_token_time = time.perf_counter()
+                chunk = json.loads(line[6:])
+                if chunk["choices"][0]["delta"].get("content"):
+                    token_count += 1
+
+    end = time.perf_counter()
+    ttft_ms = (first_token_time - start) * 1000 if first_token_time else 0
+    decode_sec = (end - first_token_time) if first_token_time else 0
+    decode_tps = token_count / decode_sec if decode_sec > 0 else 0
+
+    return {
+        "ttft_ms": round(ttft_ms, 1),
+        "decode_tok_per_sec": round(decode_tps, 2),
+        "decode_tokens": token_count,
+    }
+
+
 # ── Runner ────────────────────────────────────────────────────────────────────
 
 BACKEND_FNS = {
@@ -191,6 +242,7 @@ BACKEND_FNS = {
     "ollama": _bench_ollama,
     "llamacpp": _bench_llamacpp,
     "vllm": _bench_vllm,
+    "omlx": _bench_omlx,
 }
 
 BACKEND_LABELS = {
@@ -198,6 +250,7 @@ BACKEND_LABELS = {
     "ollama": "Ollama",
     "llamacpp": "llama.cpp Metal",
     "vllm": "vLLM Metal (HTTP)",
+    "omlx": "omlx",
 }
 
 
