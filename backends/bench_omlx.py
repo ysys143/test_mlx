@@ -62,8 +62,9 @@ def run(prompt: str, max_tokens: int = 200) -> dict:
                 if first_token_time is None:
                     first_token_time = time.perf_counter()
                 chunk = json.loads(line[6:])
-                delta = chunk["choices"][0]["delta"].get("content", "")
-                if delta:
+                delta = chunk["choices"][0]["delta"]
+                # Qwen3.5 reasoning models emit tokens in `reasoning_content`
+                if delta.get("content") or delta.get("reasoning_content"):
                     token_count += 1
 
     wall_end = time.perf_counter()

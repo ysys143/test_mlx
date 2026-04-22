@@ -220,7 +220,8 @@ def _bench_omlx(prompt: str, decode_tokens: int) -> dict:
                 if first_token_time is None:
                     first_token_time = time.perf_counter()
                 chunk = json.loads(line[6:])
-                if chunk["choices"][0]["delta"].get("content"):
+                _delta = chunk["choices"][0]["delta"]
+                if _delta.get("content") or _delta.get("reasoning_content"):
                     token_count += 1
 
     end = time.perf_counter()

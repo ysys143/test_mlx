@@ -16,6 +16,7 @@ COLORS = {
     "Ollama": "#4CE89B",
     "vLLM direct": "#A64CE8",
     "vLLM HTTP": "#E84C4C",
+    "omlx": "#E8C44C",
 }
 
 plt.rcParams.update({
@@ -35,9 +36,9 @@ plt.rcParams.update({
 
 # ── Fig 1: Single-request throughput ─────────────────────────────────────────
 
-backends = ["MLX 4-bit", "llama.cpp Metal", "Ollama", "vLLM direct", "vLLM HTTP"]
-tps      = [34.52, 33.10, 29.99, 15.61, 3.24]
-ttft     = [256,   344,   126,   341,   366]
+backends = ["MLX 4-bit", "llama.cpp Metal", "Ollama", "omlx", "vLLM direct", "vLLM HTTP"]
+tps      = [34.52, 33.10, 29.99, 19.02, 15.61, 3.24]
+ttft     = [256,   344,   126,   7,     341,   366]
 
 fig, axes = plt.subplots(1, 2, figsize=(13, 4.5))
 fig.patch.set_facecolor("#0d1117")
@@ -76,13 +77,17 @@ ttft_data = {
     "MLX 4-bit":     [60,  256,  900,  3500, 18000],
     "llama.cpp Metal":[80, 344, 1200,  4500, 22000],
     "Ollama":        [50,  126,  500,  2000, 10000],
+    # omlx: paged SSD cache hits yield near-constant TTFT across lengths
+    "omlx":          [4,   16,   18,   25,   None],
 }
 
 fig, ax = plt.subplots(figsize=(9, 5))
 fig.patch.set_facecolor("#0d1117")
 
 for label, values in ttft_data.items():
-    ax.plot(input_lengths, values, marker="o", linewidth=2.2,
+    xs = [x for x, y in zip(input_lengths, values) if y is not None]
+    ys = [y for y in values if y is not None]
+    ax.plot(xs, ys, marker="o", linewidth=2.2,
             markersize=7, color=COLORS[label], label=label)
 
 # Linear reference from 64-tok baseline (MLX)
@@ -116,6 +121,9 @@ decode_data = {
     "MLX 4-bit":     [34, 34, 32, 17],
     "llama.cpp Metal":[33, 33, 31, 16],
     "Ollama":        [30, 30, 28, 14],
+    # omlx decode drops sharply with input length (continuous-batching overhead
+    # + small paged-cache block size). 32k not measured.
+    "omlx":          [17.8, 11.3, 4.9, None],
 }
 lengths_decode = [512, 2048, 8192, 32768]
 
@@ -123,7 +131,9 @@ fig, ax = plt.subplots(figsize=(9, 5))
 fig.patch.set_facecolor("#0d1117")
 
 for label, values in decode_data.items():
-    ax.plot(lengths_decode, values, marker="o", linewidth=2.2,
+    xs = [x for x, y in zip(lengths_decode, values) if y is not None]
+    ys = [y for y in values if y is not None]
+    ax.plot(xs, ys, marker="o", linewidth=2.2,
             markersize=7, color=COLORS[label], label=label)
 
 ax.axvspan(8192, 32768, alpha=0.07, color="#E84C4C", label="throughput cliff (32k)")
@@ -153,8 +163,8 @@ with open("results/concurrency_results.json") as f:
 lengths_c = [512, 2048, 8192]
 levels    = [1, 2, 4]
 
-BACKEND_COLOR = {"mlx": "#4C9BE8", "ollama": "#4CE89B", "llamacpp": "#E8864C"}
-BACKEND_LABEL = {"mlx": "MLX server", "ollama": "Ollama", "llamacpp": "llama-server"}
+BACKEND_COLOR = {"mlx": "#4C9BE8", "ollama": "#4CE89B", "llamacpp": "#E8864C", "omlx": "#E8C44C"}
+BACKEND_LABEL = {"mlx": "MLX server", "ollama": "Ollama", "llamacpp": "llama-server", "omlx": "omlx"}
 
 fig, axes = plt.subplots(1, 3, figsize=(14, 5), sharey=False)
 fig.patch.set_facecolor("#0d1117")
@@ -164,7 +174,7 @@ fig.suptitle(
 )
 
 for ax, length in zip(axes, lengths_c):
-    for backend in ("mlx", "ollama", "llamacpp"):
+    for backend in ("mlx", "ollama", "llamacpp", "omlx"):
         rows = sorted(
             [r for r in conc_data
              if r.get("input_tokens") == length and r["backend"] == backend],

@@ -1,6 +1,6 @@
 # Apple Silicon LLM Inference Benchmark
 
-Benchmarks for Qwen3.5-9B inference across MLX, llama.cpp, Ollama, and vLLM Metal on Apple Silicon.
+Benchmarks for Qwen3.5-9B inference across MLX, llama.cpp, Ollama, omlx, and vLLM Metal on Apple Silicon.
 
 ## Single-Request Throughput
 
@@ -10,29 +10,36 @@ Benchmarks for Qwen3.5-9B inference across MLX, llama.cpp, Ollama, and vLLM Meta
 
 ![Prefill scaling](figures/fig2_prefill_scaling.png)
 
-TTFT grows near-linearly up to 8k (GatedDeltaNet O(n) linear attention). At 32k, SDPA layers cause superlinear growth.
+MLX, llama.cpp, and Ollama grow near-linearly up to 8k (GatedDeltaNet O(n) linear attention). omlx's paged SSD KV cache lands sub-30 ms TTFT at every length we measured — prompts in this benchmark hit the cache on reruns, so this line reflects cache-hit cost, not cold prefill.
 
 ## Decode Throughput vs Input Length
 
 ![Decode throughput](figures/fig3_decode_vs_length.png)
 
-Stable up to 8k, then roughly halved at 32k — SDPA layers require reading the full KV cache on every decode step.
+MLX/llama.cpp/Ollama decode stays stable up to 8k then ~halves at 32k. omlx decode falls off fast with input length (17.8 → 11.3 → 4.9 tok/s at 512/2048/8192) — continuous-batching and paged-cache bookkeeping add per-token overhead that dominates at longer contexts.
 
-## Concurrency (Ollama, OLLAMA_NUM_PARALLEL=4)
+## Concurrency
 
 ![Concurrency benchmark](figures/fig4_concurrency.png)
 
-Aggregate tok/s is completely flat regardless of concurrency — `NUM_PARALLEL` controls queue depth only, not batching. TTFT scales linearly with queue depth (proof of serial GPU processing).
+Ollama, MLX server, and llama-server are flat under concurrency — `NUM_PARALLEL` controls queue depth, not batching. **omlx actually batches**: aggregate throughput grows from 15.5 → 22.0 tok/s at 512 input (1.42×) and 7.8 → 12.2 tok/s at 2048 input (1.56×) as concurrency goes from 1 → 4.
 
 Full report: [`results/benchmark_report.md`](results/benchmark_report.md)
 
 ## Key Findings
 
-- **MLX and llama.cpp Metal** are neck-and-neck (~34 vs ~33 tok/s)
-- **Ollama** has the lowest TTFT (126ms) — persistent server keeps model warm
-- **vLLM Metal HTTP** adds 4.8x overhead vs direct library call; bf16 vs 4-bit adds another 2.2x (~10x total vs MLX)
-- **Qwen3.5 GatedDeltaNet** linear attention gives near-O(n) prefill scaling but breaks batching — no backend achieves true parallel request processing
-- **OLLAMA_NUM_PARALLEL** does not enable batching; aggregate throughput never scales with concurrency
+- **MLX and llama.cpp Metal** win single-request throughput (~34 vs ~33 tok/s)
+- **omlx** has the best TTFT (7 ms — paged SSD cache) and is the **only backend** with real continuous batching; aggregate throughput scales 1.4–1.6× with concurrency
+- **omlx** pays for continuous batching at long contexts — decode drops ~4× from 64 to 8192 input tokens
+- **Ollama** second-fastest TTFT (126 ms) — persistent server keeps model warm
+- **vLLM Metal HTTP** adds 4.8× overhead vs direct library call; bf16 vs 4-bit adds another 2.2× (~10× total vs MLX)
+- **Qwen3.5 GatedDeltaNet** linear attention gives near-O(n) prefill but breaks batching in Ollama/MLX/llama.cpp
+
+## omlx on Qwen3.5: upstream bug fix
+
+omlx 0.3.6 crashes with `RuntimeError: There is no Stream(gpu, 0) in current thread` when running Qwen3.5 (RotatingKVCache path). Root cause: `mlx_lm.generate.generation_stream` is created in the main thread at import time, but omlx's single-worker `ThreadPoolExecutor` has no Metal stream — arrays produced inside `with mx.stream(generation_stream):` blocks then fail at `.item()` in the executor thread.
+
+Fix — add a thread `initializer` that replaces `generation_stream` with a stream created in the executor thread. Clean patch (~15 lines) lives in [`~/Documents/GitHub/omlx-fork/omlx/engine_core.py`](https://github.com/jundot/omlx/compare/main) pending PR to `jundot/omlx`.
 
 ## Setup
 
@@ -52,6 +59,11 @@ hf download unsloth/Qwen3.5-9B-GGUF --include "Qwen3.5-9B-Q4_K_M.gguf" --local-d
 # Ollama
 ollama pull qwen3.5:9b
 
+# omlx (requires the upstream fix above applied)
+brew install omlx
+ln -s $(pwd)/models/qwen3.5-9b-mlx-4bit ~/.omlx/models/
+brew services start omlx
+
 # vLLM Metal
 curl -fsSL https://raw.githubusercontent.com/vllm-project/vllm-metal/main/install.sh | bash
 ```
@@ -66,12 +78,13 @@ uv run python benchmark.py
 uv run python backends/bench_mlx.py
 uv run python backends/bench_ollama.py
 uv run python backends/bench_llamacpp.py
+uv run python backends/bench_omlx.py
 uv run python backends/bench_vllm_metal.py
 uv run python backends/bench_vllm_metal_direct.py
 
 # Prefill vs decode breakdown by input length
-uv run python backends/bench_prefill_decode.py --backends mlx,ollama,llamacpp
+uv run python backends/bench_prefill_decode.py --backends mlx,ollama,llamacpp,omlx
 
 # Concurrency throughput
-uv run python backends/bench_concurrency.py --backend ollama --levels 1,2,4
+uv run python backends/bench_concurrency.py --backends ollama,mlx,llamacpp,omlx --levels 1,2,4
 ```

@@ -68,5 +68,33 @@
     "ttft_ms": 120936.0,
     "decode_tok_per_sec": 14.08,
     "decode_tokens": 200
+  },
+  {
+    "backend": "omlx",
+    "input_tokens": 64,
+    "ttft_ms": 3.7,
+    "decode_tok_per_sec": 20.16,
+    "decode_tokens": 195
+  },
+  {
+    "backend": "omlx",
+    "input_tokens": 512,
+    "ttft_ms": 16.2,
+    "decode_tok_per_sec": 17.8,
+    "decode_tokens": 197
+  },
+  {
+    "backend": "omlx",
+    "input_tokens": 2048,
+    "ttft_ms": 18.1,
+    "decode_tok_per_sec": 11.28,
+    "decode_tokens": 197
+  },
+  {
+    "backend": "omlx",
+    "input_tokens": 8192,
+    "ttft_ms": 24.5,
+    "decode_tok_per_sec": 4.89,
+    "decode_tokens": 198
   }
 ]
