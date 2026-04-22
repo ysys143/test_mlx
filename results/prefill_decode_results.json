@@ -72,29 +72,29 @@
   {
     "backend": "omlx",
     "input_tokens": 64,
-    "ttft_ms": 3.7,
-    "decode_tok_per_sec": 20.16,
+    "ttft_ms": 1244.1,
+    "decode_tok_per_sec": 18.12,
     "decode_tokens": 195
   },
   {
     "backend": "omlx",
     "input_tokens": 512,
-    "ttft_ms": 16.2,
-    "decode_tok_per_sec": 17.8,
+    "ttft_ms": 2447.0,
+    "decode_tok_per_sec": 20.3,
     "decode_tokens": 197
   },
   {
     "backend": "omlx",
     "input_tokens": 2048,
-    "ttft_ms": 18.1,
-    "decode_tok_per_sec": 11.28,
+    "ttft_ms": 7995.8,
+    "decode_tok_per_sec": 20.23,
     "decode_tokens": 197
   },
   {
     "backend": "omlx",
     "input_tokens": 8192,
-    "ttft_ms": 24.5,
-    "decode_tok_per_sec": 4.89,
+    "ttft_ms": 10721.4,
+    "decode_tok_per_sec": 20.17,
     "decode_tokens": 198
   }
 ]

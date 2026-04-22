@@ -10,28 +10,28 @@ Benchmarks for Qwen3.5-9B inference across MLX, llama.cpp, Ollama, omlx, and vLL
 
 ![Prefill scaling](figures/fig2_prefill_scaling.png)
 
-MLX, llama.cpp, and Ollama grow near-linearly up to 8k (GatedDeltaNet O(n) linear attention). omlx's paged SSD KV cache lands sub-30 ms TTFT at every length we measured — prompts in this benchmark hit the cache on reruns, so this line reflects cache-hit cost, not cold prefill.
+MLX, llama.cpp, and Ollama grow near-linearly up to 8k (GatedDeltaNet O(n) linear attention). omlx's continuous-batching path adds a fixed per-request scheduling cost and runs noticeably slower than raw MLX at every input length.
 
 ## Decode Throughput vs Input Length
 
 ![Decode throughput](figures/fig3_decode_vs_length.png)
 
-MLX/llama.cpp/Ollama decode stays stable up to 8k then ~halves at 32k. omlx decode falls off fast with input length (17.8 → 11.3 → 4.9 tok/s at 512/2048/8192) — continuous-batching and paged-cache bookkeeping add per-token overhead that dominates at longer contexts.
+MLX/llama.cpp/Ollama decode stays stable up to 8k then ~halves at 32k. omlx decode is flat near 20 tok/s across 512–8k — about 60% of raw MLX due to the server's continuous-batching bookkeeping, but unlike the other backends it doesn't collapse with input length.
 
 ## Concurrency
 
 ![Concurrency benchmark](figures/fig4_concurrency.png)
 
-Ollama, MLX server, and llama-server are flat under concurrency — `NUM_PARALLEL` controls queue depth, not batching. **omlx actually batches**: aggregate throughput grows from 15.5 → 22.0 tok/s at 512 input (1.42×) and 7.8 → 12.2 tok/s at 2048 input (1.56×) as concurrency goes from 1 → 4.
+Ollama, MLX server, and llama-server are flat under concurrency — `NUM_PARALLEL` controls queue depth, not batching. **omlx actually batches**: aggregate throughput grows from 15.6 → 21.9 tok/s at 512 input (1.40×) and 11.2 → 14.4 tok/s at 2048 input (1.29×) as concurrency goes from 1 → 4. TTFT grows with queue depth on every backend, including omlx.
 
 Full report: [`results/benchmark_report.md`](results/benchmark_report.md)
 
 ## Key Findings
 
 - **MLX and llama.cpp Metal** win single-request throughput (~34 vs ~33 tok/s)
-- **omlx** has the best TTFT (7 ms — paged SSD cache) and is the **only backend** with real continuous batching; aggregate throughput scales 1.4–1.6× with concurrency
-- **omlx** pays for continuous batching at long contexts — decode drops ~4× from 64 to 8192 input tokens
-- **Ollama** second-fastest TTFT (126 ms) — persistent server keeps model warm
+- **Ollama** has the best single-request TTFT (126 ms) — persistent server keeps model warm
+- **omlx** is ~40% slower single-request than raw MLX (13 vs 34 tok/s) — the cost of HTTP + continuous-batching — but is the **only** backend here with real per-request batching; aggregate throughput scales 1.3–1.4× with concurrency while others stay flat
+- **omlx** decode stays flat at ~20 tok/s as input length grows, while MLX/Ollama/llama.cpp collapse from ~34 → ~17 at 32k
 - **vLLM Metal HTTP** adds 4.8× overhead vs direct library call; bf16 vs 4-bit adds another 2.2× (~10× total vs MLX)
 - **Qwen3.5 GatedDeltaNet** linear attention gives near-O(n) prefill but breaks batching in Ollama/MLX/llama.cpp
 

@@ -37,8 +37,8 @@ plt.rcParams.update({
 # ── Fig 1: Single-request throughput ─────────────────────────────────────────
 
 backends = ["MLX 4-bit", "llama.cpp Metal", "Ollama", "omlx", "vLLM direct", "vLLM HTTP"]
-tps      = [34.52, 33.10, 29.99, 19.02, 15.61, 3.24]
-ttft     = [256,   344,   126,   7,     341,   366]
+tps      = [34.52, 33.10, 29.99, 13.13, 15.61, 3.24]
+ttft     = [256,   344,   126,   1179,  341,   366]
 
 fig, axes = plt.subplots(1, 2, figsize=(13, 4.5))
 fig.patch.set_facecolor("#0d1117")
@@ -77,8 +77,7 @@ ttft_data = {
     "MLX 4-bit":     [60,  256,  900,  3500, 18000],
     "llama.cpp Metal":[80, 344, 1200,  4500, 22000],
     "Ollama":        [50,  126,  500,  2000, 10000],
-    # omlx: paged SSD cache hits yield near-constant TTFT across lengths
-    "omlx":          [4,   16,   18,   25,   None],
+    "omlx":          [1244, 2447, 7996, 10721, None],
 }
 
 fig, ax = plt.subplots(figsize=(9, 5))
@@ -121,9 +120,7 @@ decode_data = {
     "MLX 4-bit":     [34, 34, 32, 17],
     "llama.cpp Metal":[33, 33, 31, 16],
     "Ollama":        [30, 30, 28, 14],
-    # omlx decode drops sharply with input length (continuous-batching overhead
-    # + small paged-cache block size). 32k not measured.
-    "omlx":          [17.8, 11.3, 4.9, None],
+    "omlx":          [20.3, 20.2, 20.2, None],
 }
 lengths_decode = [512, 2048, 8192, 32768]
 

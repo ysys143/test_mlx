@@ -59,22 +59,24 @@ def run(prompt: str, max_tokens: int = 200) -> dict:
             if not line or line == b"data: [DONE]":
                 continue
             if line.startswith(b"data: "):
-                if first_token_time is None:
-                    first_token_time = time.perf_counter()
                 chunk = json.loads(line[6:])
                 delta = chunk["choices"][0]["delta"]
                 # Qwen3.5 reasoning models emit tokens in `reasoning_content`
                 if delta.get("content") or delta.get("reasoning_content"):
+                    if first_token_time is None:
+                        first_token_time = time.perf_counter()
                     token_count += 1
 
     wall_end = time.perf_counter()
     total_sec = wall_end - wall_start
     ttft_ms = (first_token_time - wall_start) * 1000 if first_token_time else 0
+    decode_sec = (wall_end - first_token_time) if first_token_time else total_sec
+    decode_tps = token_count / decode_sec if decode_sec > 0 else 0
 
     return {
         "backend": "omlx",
         "model": model,
-        "tokens_per_sec": token_count / total_sec if total_sec > 0 else 0,
+        "tokens_per_sec": decode_tps,
         "ttft_ms": ttft_ms,
         "total_tokens": token_count,
         "total_sec": total_sec,

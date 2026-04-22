@@ -104,14 +104,20 @@
   "hotPaths": [
     {
       "path": "plot_results.py",
-      "accessCount": 16,
-      "lastAccessed": 1776840986477,
+      "accessCount": 19,
+      "lastAccessed": 1776842276181,
       "type": "file"
     },
     {
       "path": "backends/bench_concurrency.py",
-      "accessCount": 15,
-      "lastAccessed": 1776840517628,
+      "accessCount": 16,
+      "lastAccessed": 1776841909461,
+      "type": "file"
+    },
+    {
+      "path": "backends/bench_prefill_decode.py",
+      "accessCount": 12,
+      "lastAccessed": 1776841899937,
       "type": "file"
     },
     {
@@ -121,15 +127,9 @@
       "type": "file"
     },
     {
-      "path": "backends/bench_prefill_decode.py",
-      "accessCount": 9,
-      "lastAccessed": 1776840508507,
-      "type": "file"
-    },
-    {
       "path": "README.md",
-      "accessCount": 8,
-      "lastAccessed": 1776841033767,
+      "accessCount": 9,
+      "lastAccessed": 1776842311771,
       "type": "file"
     },
     {
@@ -142,6 +142,12 @@
       "path": "CLAUDE.md",
       "accessCount": 6,
       "lastAccessed": 1775109806395,
+      "type": "file"
+    },
+    {
+      "path": "backends/bench_omlx.py",
+      "accessCount": 5,
+      "lastAccessed": 1776841879096,
       "type": "file"
     },
     {
@@ -160,12 +166,6 @@
       "path": "backends/bench_llamacpp.py",
       "accessCount": 3,
       "lastAccessed": 1774515187699,
-      "type": "file"
-    },
-    {
-      "path": "backends/bench_omlx.py",
-      "accessCount": 3,
-      "lastAccessed": 1776840500781,
       "type": "file"
     },
     {

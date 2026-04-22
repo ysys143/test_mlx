@@ -1,15 +1,15 @@
 # Benchmark Report: Qwen3.5-9B + GPT-OSS
 
-**Date**: 2026-04-22 15:49
+**Date**: 2026-04-22 16:12
 **Prompt**: Explain the theory of relativity in detail, covering both special and general re...
 **Max tokens**: 200
 **Runs averaged**: 3
 
 ## Results
 
-| Backend | tokens/sec        | TTFT (ms)         | total_sec          |
-|---------|-------------------|-------------------|--------------------|
-| omlx    | 19.02             | 7                 | 10.34              |
+| Backend | tokens/sec         | TTFT (ms)          | total_sec         |
+|---------|--------------------|--------------------|-------------------|
+| omlx    | 13.13              | 1179               | 16.29             |
 
 ## Notes
 

@@ -1,0 +1,34 @@
+{
+  "timestamp": "20260422_161156",
+  "prompt": "Explain the theory of relativity in detail, covering both special and general relativity.",
+  "max_tokens": 200,
+  "runs": 3,
+  "results": {
+    "omlx": [
+      {
+        "backend": "omlx",
+        "model": "qwen3.5-9b-mlx-4bit",
+        "tokens_per_sec": 11.737469691914672,
+        "ttft_ms": 1161.682749981992,
+        "total_tokens": 196,
+        "total_sec": 17.860341417021118
+      },
+      {
+        "backend": "omlx",
+        "model": "qwen3.5-9b-mlx-4bit",
+        "tokens_per_sec": 12.437955714576406,
+        "ttft_ms": 1405.6500419974327,
+        "total_tokens": 196,
+        "total_sec": 17.163866624992806
+      },
+      {
+        "backend": "omlx",
+        "model": "qwen3.5-9b-mlx-4bit",
+        "tokens_per_sec": 15.216731824445702,
+        "ttft_ms": 968.887375027407,
+        "total_tokens": 196,
+        "total_sec": 13.849445583007764
+      }
+    ]
+  }
+}

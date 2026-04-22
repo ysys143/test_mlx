@@ -329,10 +329,10 @@
     "requests": 1,
     "successful": 1,
     "total_tokens": 197,
-    "wall_sec": 12.69,
-    "aggregate_tok_per_sec": 15.52,
-    "avg_latency_sec": 12.69,
-    "avg_ttft_ms": 8.8,
+    "wall_sec": 12.66,
+    "aggregate_tok_per_sec": 15.57,
+    "avg_latency_sec": 12.65,
+    "avg_ttft_ms": 2537.5,
     "input_tokens": 512
   },
   {
@@ -341,10 +341,10 @@
     "requests": 2,
     "successful": 2,
     "total_tokens": 394,
-    "wall_sec": 18.4,
-    "aggregate_tok_per_sec": 21.41,
-    "avg_latency_sec": 18.35,
-    "avg_ttft_ms": 22.5,
+    "wall_sec": 20.4,
+    "aggregate_tok_per_sec": 19.31,
+    "avg_latency_sec": 20.36,
+    "avg_ttft_ms": 6139.7,
     "input_tokens": 512
   },
   {
@@ -353,10 +353,10 @@
     "requests": 4,
     "successful": 4,
     "total_tokens": 788,
-    "wall_sec": 35.75,
-    "aggregate_tok_per_sec": 22.04,
-    "avg_latency_sec": 35.62,
-    "avg_ttft_ms": 25.1,
+    "wall_sec": 35.93,
+    "aggregate_tok_per_sec": 21.93,
+    "avg_latency_sec": 35.72,
+    "avg_ttft_ms": 9966.7,
     "input_tokens": 512
   },
   {
@@ -365,10 +365,10 @@
     "requests": 1,
     "successful": 1,
     "total_tokens": 197,
-    "wall_sec": 25.29,
-    "aggregate_tok_per_sec": 7.79,
-    "avg_latency_sec": 25.28,
-    "avg_ttft_ms": 23.5,
+    "wall_sec": 17.65,
+    "aggregate_tok_per_sec": 11.16,
+    "avg_latency_sec": 17.65,
+    "avg_ttft_ms": 7970.5,
     "input_tokens": 2048
   },
   {
@@ -377,10 +377,10 @@
     "requests": 2,
     "successful": 2,
     "total_tokens": 394,
-    "wall_sec": 40.61,
-    "aggregate_tok_per_sec": 9.7,
-    "avg_latency_sec": 40.56,
-    "avg_ttft_ms": 45.5,
+    "wall_sec": 29.25,
+    "aggregate_tok_per_sec": 13.47,
+    "avg_latency_sec": 29.22,
+    "avg_ttft_ms": 15937.4,
     "input_tokens": 2048
   },
   {
@@ -389,10 +389,10 @@
     "requests": 4,
     "successful": 4,
     "total_tokens": 788,
-    "wall_sec": 64.6,
-    "aggregate_tok_per_sec": 12.2,
-    "avg_latency_sec": 64.28,
-    "avg_ttft_ms": 82.4,
+    "wall_sec": 54.56,
+    "aggregate_tok_per_sec": 14.44,
+    "avg_latency_sec": 54.44,
+    "avg_ttft_ms": 31951.6,
     "input_tokens": 2048
   }
 ]

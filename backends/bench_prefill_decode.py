@@ -217,11 +217,11 @@ def _bench_omlx(prompt: str, decode_tokens: int) -> dict:
             if not line or line == b"data: [DONE]":
                 continue
             if line.startswith(b"data: "):
-                if first_token_time is None:
-                    first_token_time = time.perf_counter()
                 chunk = json.loads(line[6:])
                 _delta = chunk["choices"][0]["delta"]
                 if _delta.get("content") or _delta.get("reasoning_content"):
+                    if first_token_time is None:
+                        first_token_time = time.perf_counter()
                     token_count += 1
 
     end = time.perf_counter()
